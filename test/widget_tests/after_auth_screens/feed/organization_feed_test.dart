@@ -223,7 +223,7 @@ void main() {
       when(mockViewModel.isBusy).thenReturn(false);
       when(mockViewModel.initialise()).thenReturn(null);
       when(mockViewModel.posts).thenReturn([]);
-      when(mockViewModel.pinnedPosts).thenReturn([post]);
+      when(mockViewModel.pinnedPosts).thenReturn([]);
 
       final model = locator<MainScreenViewModel>();
       await tester.pumpWidget(createOrganizationFeedScreen2(homeModel: model));
@@ -240,7 +240,7 @@ void main() {
       when(mockViewModel.isBusy).thenReturn(false);
       when(mockViewModel.initialise()).thenReturn(null);
       when(mockViewModel.posts).thenReturn([]);
-      when(mockViewModel.pinnedPosts).thenReturn([post]);
+      when(mockViewModel.pinnedPosts).thenReturn([]);
 
       final model = locator<MainScreenViewModel>();
       await tester.pumpWidget(createOrganizationFeedScreen2(homeModel: model));

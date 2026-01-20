@@ -119,62 +119,94 @@ class _OrganizationFeedState extends State<OrganizationFeed> {
 
                       return false;
                     },
-                    child: ListView(
+                    // Using ListView.builder for efficient, lazy loading of feed items.
+                    // This prevents memory spikes and scroll jank when the feed is large.
+                    child: ListView.builder(
                       controller: _scrollController,
                       key: const Key('listView'),
                       shrinkWrap: true,
-                      children: [
-                        // Always show PinnedPost if available
-                        if (model.pinnedPosts.isNotEmpty)
-                          PinnedPost(
-                            key: const Key('pinnedPosts'),
-                            pinnedPost: model.pinnedPosts,
-                            model: widget.homeModel!,
-                          ),
-                        SizedBox(
-                          height: SizeConfig.screenHeight! * 0.01,
-                        ),
-                        model.posts.isNotEmpty
-                            ? PostListWidget(
-                                key: widget.homeModel?.keySHPost,
-                                posts: model.posts,
-                                function: model.navigateToIndividualPage,
-                                deletePost: model.removePost,
-                              )
-                            : // if there is no post in an organisation then show text button to create a post.
-                            Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                      top: SizeConfig.screenHeight! * 0.21,
+                      itemCount: (model.pinnedPosts.isNotEmpty ? 1 : 0) + (model.posts.isNotEmpty ? 1 : 0) + (model.hasMore ? 1 : 0) + (model.posts.isEmpty && model.pinnedPosts.isEmpty ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        int currentIndex = 0;
+                        // Show pinned posts if available
+                        if (model.pinnedPosts.isNotEmpty) {
+                          if (index == currentIndex) {
+                            return PinnedPost(
+                              key: const Key('pinnedPosts'),
+                              pinnedPost: model.pinnedPosts,
+                              model: widget.homeModel!,
+                            );
+                          }
+                          currentIndex++;
+                        }
+                        // Show posts if available
+                        if (model.posts.isNotEmpty) {
+                          if (index == currentIndex) {
+                            return Column(
+                              children: [
+                                SizedBox(
+                                  height: SizeConfig.screenHeight! * 0.01,
+                                ),
+                                PostListWidget(
+                                  key: widget.homeModel?.keySHPost,
+                                  posts: model.posts,
+                                  function: model.navigateToIndividualPage,
+                                  deletePost: model.removePost,
+                                ),
+                              ],
+                            );
+                          }
+                          currentIndex++;
+                        }
+                        // Show no posts message if no posts
+                        if (model.posts.isEmpty && model.pinnedPosts.isEmpty) {
+                          if (index == currentIndex) {
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top: SizeConfig.screenHeight! * 0.21,
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context)!
+                                        .strictTranslate(
+                                      'There are no posts in this organization',
                                     ),
-                                    child: Text(
-                                      AppLocalizations.of(context)!
-                                          .strictTranslate(
-                                        'There are no posts in this organization',
-                                      ),
-                                      style: TextStyle(
-                                        fontSize:
-                                            SizeConfig.screenHeight! * 0.026,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.screenHeight! * 0.026,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    navigationService
+                                        .pushScreen('/addpostscreen');
+                                  },
+                                  child: Text(
+                                    AppLocalizations.of(context)!
+                                        .strictTranslate(
+                                      'Create your first post',
                                     ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      navigationService
-                                          .pushScreen('/addpostscreen');
-                                    },
-                                    child: Text(
-                                      AppLocalizations.of(context)!
-                                          .strictTranslate(
-                                        'Create your first post',
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ],
+                                ),
+                              ],
+                            );
+                          }
+                          currentIndex++;
+                        }
+                        // Show end-of-list loader if hasMore
+                        if (model.hasMore) {
+                          if (index == currentIndex) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                 ),
